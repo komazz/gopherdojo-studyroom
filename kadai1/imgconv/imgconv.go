@@ -43,11 +43,16 @@ func NewConverter(srcExt, dstExt string) *Converter {
 // Convert 画像の拡張子変換をするメインロジック関数
 func (c *Converter) Convert(src string) error {
 	// 入力ファイルを取得する
-	srcfile, err := os.Open(src)
+	srcfile, err := os.Open(filepath.Clean(src))
 	if err != nil {
 		return err
 	}
-	defer srcfile.Close()
+	defer func() error {
+		if err := srcfile.Close(); err != nil {
+			return err
+		}
+		return nil
+	}()
 
 	// 読み出す(decode)
 	img, err := c.Decode(srcfile)
@@ -61,7 +66,12 @@ func (c *Converter) Convert(src string) error {
 	if err != nil {
 		return err
 	}
-	defer dstfile.Close()
+	defer func() error {
+		if err := dstfile.Close(); err != nil {
+			return err
+		}
+		return nil
+	}()
 
 	// 書き出す(encode)
 	err = c.Encode(dstfile, img)
