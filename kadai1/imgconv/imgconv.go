@@ -10,33 +10,37 @@ import (
 	"strings"
 )
 
+// Converter 画像の拡張子変換を行う型
 type Converter struct {
 	SrcExt string
 	DstExt string
 }
 
 var (
-	SupportExt = map[string]string{
+	supportExt = map[string]string{
 		"png":  ".png",
 		"jpg":  ".jpg",
 		"jpeg": ".jpg",
 	}
-	UnkownDecodeError = fmt.Errorf("Unkown Decode Error")
-	UnkownEncodeError = fmt.Errorf("Unkown Encode Error")
+	errUnkownDecode = fmt.Errorf("Unkown Decode Error")
+	errUnkownEncode = fmt.Errorf("Unkown Encode Error")
 )
 
+// ValidExt サポートされている拡張子か確認する関数
 func ValidExt(ext string) bool {
-	_, ok := SupportExt[ext]
+	_, ok := supportExt[ext]
 	return ok
 }
 
+// NewConverter Converter型を生成する関数
 func NewConverter(srcExt, dstExt string) *Converter {
 	return &Converter{
-		SrcExt: SupportExt[srcExt],
-		DstExt: SupportExt[dstExt],
+		SrcExt: supportExt[srcExt],
+		DstExt: supportExt[dstExt],
 	}
 }
 
+// Convert 画像の拡張子変換をするメインロジック関数
 func (c *Converter) Convert(src string) error {
 	// 入力ファイルを取得する
 	srcfile, err := os.Open(src)
@@ -67,6 +71,7 @@ func (c *Converter) Convert(src string) error {
 	return nil
 }
 
+// Decode 画像をデコードする関数
 func (c *Converter) Decode(srcfile *os.File) (image.Image, error) {
 	var img image.Image
 	switch c.SrcExt {
@@ -77,10 +82,11 @@ func (c *Converter) Decode(srcfile *os.File) (image.Image, error) {
 		img, err := png.Decode(srcfile)
 		return img, err
 	default:
-		return img, UnkownDecodeError
+		return img, errUnkownDecode
 	}
 }
 
+// Encode 画像をエンコードする関数
 func (c *Converter) Encode(dstfile *os.File, img image.Image) error {
 	switch c.DstExt {
 	case ".png":
@@ -90,10 +96,11 @@ func (c *Converter) Encode(dstfile *os.File, img image.Image) error {
 		err := jpeg.Encode(dstfile, img, &jpeg.Options{Quality: jpeg.DefaultQuality})
 		return err
 	default:
-		return UnkownEncodeError
+		return errUnkownEncode
 	}
 }
 
+// createDstFileName 画像の出力先ファイル名を作成する関数
 func (c *Converter) createDstFileName(src string) string {
 	oldExt := filepath.Ext(src)
 	newExt := c.DstExt

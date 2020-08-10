@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	srcExt, dstExt            string
-	TooFewArgumentError       = fmt.Errorf("Too Few Arguments")
-	UnsupportedExtensionError = fmt.Errorf("Unsupported extension")
+	srcExt, dstExt          string
+	errTooFewArgument       = fmt.Errorf("Too Few Arguments")
+	errUnsupportedExtension = fmt.Errorf("Unsupported extension")
 )
 
 func init() {
@@ -21,7 +21,7 @@ func init() {
 	flag.Parse()
 }
 
-// 変換する候補のファイルを再帰取得する
+// SrcFileList 変換する候補のファイルを再帰取得する関数
 func SrcFileList(SrcExt, srcPath string) ([]string, error) {
 	var srcFileList []string
 	err := filepath.Walk(srcPath, func(path string, info os.FileInfo, err error) error {
@@ -36,7 +36,7 @@ func SrcFileList(SrcExt, srcPath string) ([]string, error) {
 func exec() error {
 	args := flag.Args()
 	if len(args) < 1 {
-		return TooFewArgumentError
+		return errTooFewArgument
 	}
 
 	c := imgconv.NewConverter(srcExt, dstExt)
@@ -61,7 +61,7 @@ func exec() error {
 	} else {
 		// ファイル指定の場合
 		if filepath.Ext(srcPath) != c.SrcExt {
-			return UnsupportedExtensionError
+			return errUnsupportedExtension
 		}
 		if err := c.Convert(srcPath); err != nil {
 			return err
