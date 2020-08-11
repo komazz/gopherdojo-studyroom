@@ -21,22 +21,14 @@ func init() {
 	flag.Parse()
 }
 
-// SrcFileList 変換する候補のファイルを再帰取得する関数
-func SrcFileList(SrcExt, srcPath string) ([]string, error) {
-	var srcFileList []string
-	err := filepath.Walk(srcPath, func(path string, info os.FileInfo, err error) error {
-		if filepath.Ext(path) == SrcExt {
-			srcFileList = append(srcFileList, path)
-		}
-		return nil
-	})
-	return srcFileList, err
-}
-
 func exec() error {
 	args := flag.Args()
 	if len(args) < 1 {
 		return errTooFewArgument
+	}
+
+	if !imgconv.ValidExt(srcExt) || !imgconv.ValidExt(dstExt) {
+		return errUnsupportedExtension
 	}
 
 	c := imgconv.NewConverter(srcExt, dstExt)
@@ -49,7 +41,7 @@ func exec() error {
 
 	if dir.IsDir() {
 		// ディレクトリ指定の場合
-		fileList, err := SrcFileList(c.SrcExt, srcPath)
+		fileList, err := c.SrcFileList(srcPath)
 		if err != nil {
 			return err
 		}

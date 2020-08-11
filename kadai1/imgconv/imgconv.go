@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,8 +23,8 @@ var (
 		"jpg":  ".jpg",
 		"jpeg": ".jpg",
 	}
-	errUnkownDecode = fmt.Errorf("Unkown Decode Error")
-	errUnkownEncode = fmt.Errorf("Unkown Encode Error")
+	errDecodeFailed = fmt.Errorf("Decode Fail Error")
+	errEncodeFailed = fmt.Errorf("Encode Fail Error")
 )
 
 // ValidExt サポートされている拡張子か確認する関数
@@ -38,6 +39,18 @@ func NewConverter(srcExt, dstExt string) *Converter {
 		SrcExt: supportExt[srcExt],
 		DstExt: supportExt[dstExt],
 	}
+}
+
+// SrcFileList 変換する候補のファイルを再帰取得する関数
+func (c *Converter) SrcFileList(srcPath string) ([]string, error) {
+	var srcFileList []string
+	err := filepath.Walk(srcPath, func(path string, info os.FileInfo, err error) error {
+		if filepath.Ext(path) == c.SrcExt {
+			srcFileList = append(srcFileList, path)
+		}
+		return nil
+	})
+	return srcFileList, err
 }
 
 // Convert 画像の拡張子変換をするメインロジック関数
@@ -82,7 +95,7 @@ func (c *Converter) Convert(src string) error {
 }
 
 // Decode 画像をデコードする関数
-func (c *Converter) Decode(srcfile *os.File) (image.Image, error) {
+func (c *Converter) Decode(srcfile io.Reader) (image.Image, error) {
 	var img image.Image
 	switch c.SrcExt {
 	case ".jpg":
@@ -92,12 +105,12 @@ func (c *Converter) Decode(srcfile *os.File) (image.Image, error) {
 		img, err := png.Decode(srcfile)
 		return img, err
 	default:
-		return img, errUnkownDecode
+		return img, errDecodeFailed
 	}
 }
 
 // Encode 画像をエンコードする関数
-func (c *Converter) Encode(dstfile *os.File, img image.Image) error {
+func (c *Converter) Encode(dstfile io.Writer, img image.Image) error {
 	switch c.DstExt {
 	case ".png":
 		err := png.Encode(dstfile, img)
@@ -106,7 +119,7 @@ func (c *Converter) Encode(dstfile *os.File, img image.Image) error {
 		err := jpeg.Encode(dstfile, img, &jpeg.Options{Quality: jpeg.DefaultQuality})
 		return err
 	default:
-		return errUnkownEncode
+		return errEncodeFailed
 	}
 }
 
