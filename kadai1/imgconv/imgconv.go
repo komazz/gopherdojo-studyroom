@@ -1,7 +1,6 @@
 package imgconv
 
 import (
-	"fmt"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -23,8 +22,6 @@ var (
 		"jpg":  ".jpg",
 		"jpeg": ".jpg",
 	}
-	errDecodeFailed = fmt.Errorf("Decode Fail Error")
-	errEncodeFailed = fmt.Errorf("Encode Fail Error")
 )
 
 // ValidExt サポートされている拡張子か確認する関数
@@ -97,30 +94,26 @@ func (c *Converter) Convert(src string) error {
 // Decode 画像をデコードする関数
 func (c *Converter) Decode(srcfile io.Reader) (image.Image, error) {
 	var img image.Image
+	var err error
 	switch c.SrcExt {
 	case ".jpg":
-		img, err := jpeg.Decode(srcfile)
-		return img, err
+		img, err = jpeg.Decode(srcfile)
 	case ".png":
-		img, err := png.Decode(srcfile)
-		return img, err
-	default:
-		return img, errDecodeFailed
+		img, err = png.Decode(srcfile)
 	}
+	return img, err
 }
 
 // Encode 画像をエンコードする関数
 func (c *Converter) Encode(dstfile io.Writer, img image.Image) error {
+	var err error
 	switch c.DstExt {
 	case ".png":
-		err := png.Encode(dstfile, img)
-		return err
+		err = png.Encode(dstfile, img)
 	case ".jpg":
-		err := jpeg.Encode(dstfile, img, &jpeg.Options{Quality: jpeg.DefaultQuality})
-		return err
-	default:
-		return errEncodeFailed
+		err = jpeg.Encode(dstfile, img, &jpeg.Options{Quality: jpeg.DefaultQuality})
 	}
+	return err
 }
 
 // createDstFileName 画像の出力先ファイル名を作成する関数

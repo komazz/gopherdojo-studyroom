@@ -18,10 +18,10 @@ var (
 func init() {
 	flag.StringVar(&srcExt, "s", "jpg", "Optional: Extension of Source Image.")
 	flag.StringVar(&dstExt, "d", "png", "Optional: Extension of Destination Image.")
-	flag.Parse()
 }
 
 func exec() error {
+	flag.Parse()
 	args := flag.Args()
 	if len(args) < 1 {
 		return errTooFewArgument
