@@ -51,17 +51,16 @@ func (c *Converter) SrcFileList(srcPath string) ([]string, error) {
 }
 
 // Convert 画像の拡張子変換をするメインロジック関数
-func (c *Converter) Convert(src string) error {
+func (c *Converter) Convert(src string) (err error) {
 	// 入力ファイルを取得する
 	srcfile, err := os.Open(filepath.Clean(src))
 	if err != nil {
 		return err
 	}
-	defer func() error {
-		if err := srcfile.Close(); err != nil {
-			return err
+	defer func() {
+		if cerr := srcfile.Close(); cerr != nil {
+			err = cerr
 		}
-		return nil
 	}()
 
 	// 読み出す(decode)
@@ -76,11 +75,10 @@ func (c *Converter) Convert(src string) error {
 	if err != nil {
 		return err
 	}
-	defer func() error {
-		if err := dstfile.Close(); err != nil {
-			return err
+	defer func() {
+		if cerr := dstfile.Close(); cerr != nil {
+			err = cerr
 		}
-		return nil
 	}()
 
 	// 書き出す(encode)
