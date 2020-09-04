@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -11,8 +12,8 @@ import (
 
 var (
 	srcExt, dstExt          string
-	errTooFewArgument       = fmt.Errorf("Too Few Arguments")
-	errUnsupportedExtension = fmt.Errorf("Unsupported extension")
+	errTooFewArgument       = errors.New("Too Few Arguments")
+	errUnsupportedExtension = errors.New("Unsupported extension")
 )
 
 func init() {
