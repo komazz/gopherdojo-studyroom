@@ -8,14 +8,13 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 )
 
 // Game タイピングゲームを管理する構造体
 type Game struct {
 	IReader
-	TimeLimit   int
+	TimeLimit   time.Duration
 	wordResults []wordResult
 }
 
@@ -40,7 +39,7 @@ func init() {
 // NewGame 新しいタイピングゲームを作成する関数
 func NewGame(timeLimit int) *Game {
 	return &Game{
-		TimeLimit: timeLimit,
+		TimeLimit: time.Duration(timeLimit),
 		IReader:   &Reader{},
 	}
 }
@@ -74,9 +73,9 @@ func (g *Game) createGameResults() string {
 			count++
 		}
 	}
-	results += "\n" + "------------"
-	results += "\n" + strconv.Itoa(count) + "/" + strconv.Itoa(len(g.wordResults)) + " 正解"
-	results += "\n" + "------------"
+	results += fmt.Sprint("\n------------")
+	results += fmt.Sprintf("\n%d/%d 正解", count, len(g.wordResults))
+	results += fmt.Sprint("\n------------")
 	return results
 }
 
@@ -108,7 +107,7 @@ func (g *Game) Setup(wordFile string) (words []string, err error) {
 // Start ゲームの進行を管理する関数
 func (g *Game) Start(r io.Reader, words []string) error {
 	bc := context.Background()
-	timeout := time.Duration(g.TimeLimit) * time.Second
+	timeout := g.TimeLimit * time.Second
 	ctx, cancel := context.WithTimeout(bc, timeout)
 	defer cancel()
 
