@@ -20,16 +20,12 @@ type Server struct {
 // Run サーバーを起動する
 func Run() error {
 	server := &Server{omikuji.New(time.Now())}
-	if err := http.ListenAndServe(":8080", server); err != nil {
+
+	http.HandleFunc("/omikuji/", server.omikujiHandler)
+	if err := http.ListenAndServe(":8080", nil); err != nil {
 		return err
 	}
 	return nil
-}
-
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	router := http.NewServeMux()
-	router.Handle("/omikuji/", http.HandlerFunc(s.omikujiHandler))
-	router.ServeHTTP(w, r)
 }
 
 func (s *Server) omikujiHandler(w http.ResponseWriter, r *http.Request) {

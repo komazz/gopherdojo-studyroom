@@ -9,7 +9,7 @@ import (
 	"github.com/gopherdojo/gopherdojo-studyroom/kadai4/komazz/omikuji"
 )
 
-func TestRun(t *testing.T) {
+func TestOmikujiHandler(t *testing.T) {
 	tests := []struct {
 		name    string
 		time    time.Time
@@ -27,10 +27,13 @@ func TestRun(t *testing.T) {
 			s := &Server{omikuji.New(tt.time)}
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "/omikuji/", nil)
-			s.ServeHTTP(w, r)
+			s.omikujiHandler(w, r)
+
+			rw := w.Result()
+			defer rw.Body.Close()
 
 			var rs omikuji.Result
-			err := json.NewDecoder(w.Body).Decode(&rs)
+			err := json.NewDecoder(rw.Body).Decode(&rs)
 			if err != nil {
 				t.Error("Fail to Decode")
 			}
